@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quality + Value: From 401 Mid-Caps to Acuity · A Screener and a DCF</title>
+<meta name="description" content="A quality-and-value screen of the S&P MidCap 400 built on an SEC ingestion layer, the top-ranked names the filings ruled out, and a three-scenario DCF on Acuity (NYSE: AYI).">
+<meta property="og:title" content="Quality + Value: From 401 Mid-Caps to Acuity">
+<meta property="og:description" content="A screener built on SEC filings, four names the filings ruled out, and a three-scenario DCF on Acuity (NYSE: AYI).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230a0d13%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-family=%22Georgia%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22%23e3b24c%22%3EQV%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d13; --bg-2:#0e131b; --bg-3:#131b26; --bg-4:#18212e;
+  --ink:#e7edf5; --ink-2:#9aa6b6; --ink-3:#6e7a8a;
+  --line:rgba(231,237,245,.09); --line-2:rgba(231,237,245,.16);
+  --gold:#e3b24c; --gold-dim:rgba(227,178,76,.13);
+  --teal:#46c2c4; --teal-dim:rgba(70,194,196,.13);
+  --coral:#e3604a; --coral-dim:rgba(227,96,74,.13);
+  --green:#5db97f; --green-dim:rgba(93,185,127,.13);
+  --gray:#7a8696;
+  /* chart marks, validated on --bg-2 (dark band, CVD and contrast checks pass) */
+  --s-abl:#00a0a8; --s-ais:#c98500;
+  --font-serif:'Newsreader',Georgia,serif;
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --maxw:900px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3{font-weight:400;margin:0}
+p{margin:0 0 16px}
+::selection{background:var(--gold-dim)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.section{padding:54px 0;border-top:1px solid var(--line)}
+
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,13,19,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:var(--maxw);margin:0 auto;padding:11px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.brand b{color:var(--gold);font-weight:600}
+.partnav{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em;white-space:nowrap}
+.partnav a{text-decoration:none;margin-left:14px}
+.partnav a:hover{color:var(--ink)}
+
+.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.eyebrow .num{color:var(--gold)}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h2{font-family:var(--font-serif);font-size:clamp(27px,4.2vw,38px);line-height:1.12;letter-spacing:-.01em;margin:0 0 18px}
+h2 em{font-style:italic;color:var(--gold)}
+h3{font-family:var(--font-serif);font-weight:500;font-size:21px;line-height:1.25;margin:0 0 8px}
+.lede{font-family:var(--font-serif);font-size:clamp(17px,2.3vw,20px);line-height:1.55;color:var(--ink-2);max-width:720px;margin-bottom:26px}
+.lede b{color:var(--ink);font-weight:500}
+.body{color:var(--ink-2);max-width:740px}
+.body b{color:var(--ink);font-weight:500}
+.mono{font-family:var(--font-mono)}
+.muted{color:var(--ink-3)}
+
+.hero{padding:50px 0 54px}
+.as-of{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:26px}
+.as-of .live{color:var(--teal)}
+.hero h1{font-family:var(--font-serif);font-size:clamp(34px,6.4vw,58px);line-height:1.04;letter-spacing:-.012em;margin:0 0 22px}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero .thesis{font-family:var(--font-serif);font-size:clamp(18px,2.6vw,22px);line-height:1.5;color:var(--ink-2);max-width:700px;margin:0 0 34px}
+.heronums{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.heronum{border:1px solid var(--line);border-left:2px solid var(--gold);background:var(--bg-2);padding:16px 16px;border-radius:3px}
+.heronum .v{font-family:var(--font-mono);font-size:28px;font-weight:600;color:var(--gold);letter-spacing:-.01em;line-height:1}
+.heronum .v small{font-size:14px;color:var(--ink-2);font-weight:500;margin-left:4px}
+.heronum .l{font-size:13px;color:var(--ink-2);margin-top:9px;line-height:1.4}
+
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:4px;padding:20px 20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g135{grid-template-columns:1.35fr 1fr}
+.grid2>*,.grid3>*,.grid4>*{min-width:0}
+.scroll-x{max-width:100%}
+.kicker{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.pillar .q{font-family:var(--font-serif);font-size:19px;line-height:1.3;color:var(--ink);margin-bottom:10px}
+.pillar .m{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.pillar.value{border-top:2px solid var(--teal)}
+.pillar.quality{border-top:2px solid var(--gold)}
+.note{font-size:13.5px;color:var(--ink-2);border-left:2px solid var(--line-2);padding:4px 0 4px 14px;margin:18px 0 0;max-width:740px}
+.note b{color:var(--ink);font-weight:500}
+
+/* funnel */
+.fun{display:grid;grid-template-columns:minmax(150px,280px) 1fr;gap:6px 14px;align-items:center}
+.fun .lbl{font-size:13.5px;color:var(--ink-2);text-align:right;line-height:1.3}
+.fun .lbl b{color:var(--ink);font-weight:500}
+.fun .track{position:relative;height:24px}
+.fun .bar{height:24px;border-radius:0 4px 4px 0;background:var(--s-abl);min-width:4px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+.fun .bar.pick{background:var(--s-ais)}
+.fun .n{position:absolute;top:2px;font-family:var(--font-mono);font-size:14px;font-weight:600;white-space:nowrap}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+.tbl{font-size:13.5px}
+.tbl th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:500;text-align:left;padding:0 8px 10px;border-bottom:1px solid var(--line-2)}
+.tbl td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink-2)}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .tk{font-family:var(--font-mono);font-weight:600;color:var(--ink)}
+.tbl tr.pick td{background:var(--gold-dim)}
+.tbl tr.pick td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+.sbar{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end;font-family:var(--font-mono);color:var(--ink)}
+.sbar u{display:block;width:46px;height:6px;background:var(--bg-4);border-radius:0 3px 3px 0;text-decoration:none}
+.sbar i{display:block;height:6px;background:var(--s-abl);border-radius:0 3px 3px 0}
+.badge{display:inline-block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.b-pick{color:var(--bg);background:var(--gold);font-weight:600}
+.b-fb{color:var(--gold);border:1px solid var(--gold)}
+.b-out{color:var(--ink-3);border:1px solid var(--line-2)}
+.why{font-size:13px}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.legend-row{font-size:12.5px;color:var(--ink-3);margin-top:12px;line-height:1.55}
+
+/* rule-out cards */
+.ro{border-top:2px solid var(--coral)}
+.ro.fb{border-top-color:var(--gold)}
+.ro .rank{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase}
+.ro h3{margin-top:6px}
+.ro .verdict{font-family:var(--font-serif);font-style:italic;color:var(--ink);font-size:17px;margin:4px 0 12px}
+.ro ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:13.5px}
+.ro li{margin-bottom:6px}
+.ro li b{color:var(--ink);font-weight:500}
+.ro .stat{display:flex;gap:18px;margin:2px 0 12px}
+.ro .stat div{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--coral);line-height:1.1}
+.ro.fb .stat div{color:var(--gold)}
+.ro .stat span{display:block;font-family:var(--font-sans);font-size:11.5px;color:var(--ink-3);font-weight:400;margin-top:3px}
+
+/* thesis */
+.pull{font-family:var(--font-serif);font-size:clamp(20px,3vw,26px);line-height:1.4;color:var(--ink);border-left:2px solid var(--gold);padding:4px 0 4px 20px;margin:0 0 26px;max-width:760px}
+.pull em{color:var(--gold)}
+.kv{display:grid;grid-template-columns:1fr auto;font-size:13.5px}
+.kv div{padding:7px 0;border-bottom:1px solid var(--line)}
+.kv div:nth-child(odd){color:var(--ink-2)}
+.kv div:nth-child(even){text-align:right;font-family:var(--font-mono);color:var(--ink);padding-left:12px}
+.kv2{grid-template-columns:1fr auto 1fr auto;column-gap:0}
+.kv2 div:nth-child(4n+3){padding-left:28px}
+@media (max-width:760px){.kv2{grid-template-columns:1fr auto}.kv2 div:nth-child(4n+3){padding-left:0}}
+
+/* charts */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--font-mono);fill:var(--ink-3)}
+.lg{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px}
+.lg i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.tip{position:absolute;pointer-events:none;background:var(--bg-4);border:1px solid var(--line-2);border-radius:4px;padding:8px 10px;font-size:12.5px;color:var(--ink);line-height:1.45;white-space:nowrap;opacity:0;transform:translate(-50%,-100%);transition:opacity .12s;z-index:5;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.tip .t{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);letter-spacing:.08em;margin-bottom:3px}
+.tip .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+
+/* scenario switch */
+.switch{display:inline-flex;border:1px solid var(--line-2);border-radius:4px;overflow:hidden;margin-bottom:18px}
+.switch button{background:none;border:0;color:var(--ink-2);font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:9px 18px;cursor:pointer}
+.switch button+button{border-left:1px solid var(--line-2)}
+.switch button[aria-pressed="true"]{background:var(--gold);color:var(--bg);font-weight:600}
+.switch button:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+.vtile .v{font-family:var(--font-mono);font-size:34px;font-weight:600;line-height:1;color:var(--ink)}
+.vtile .d{font-family:var(--font-mono);font-size:14px;margin-left:8px}
+.up{color:var(--teal)} .dn{color:var(--coral)}
+.vtile .l{font-size:12.5px;color:var(--ink-3);margin-top:8px;line-height:1.4}
+.vtile.active{border-color:var(--gold)}
+
+.ff text{font-size:11px}
+.sens td{font-family:var(--font-mono);font-size:12.5px;text-align:center;padding:8px 2px;border:2px solid var(--bg-2);color:var(--ink);cursor:default}
+.sens th{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3);font-weight:500;padding:0 2px 6px;letter-spacing:.06em}
+.sens td.rh{width:72px;background:none;color:var(--ink-3);text-align:right;padding-right:10px;font-size:11px}
+.sens td.base{outline:2px solid var(--ink);outline-offset:-2px;font-weight:600}
+.minisw{display:inline-flex;gap:6px;margin-bottom:12px}
+.minisw button{background:none;border:1px solid var(--line-2);color:var(--ink-2);font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:3px;cursor:pointer}
+.minisw button[aria-pressed="true"]{border-color:var(--teal);color:var(--teal)}
+
+.kill li{margin-bottom:10px}
+.kill li b{color:var(--ink);font-weight:500}
+ol.kill,ul.kill{color:var(--ink-2);padding-left:20px;max-width:740px}
+
+.cta{border:1px solid var(--gold);background:var(--gold-dim);border-radius:4px;padding:26px 24px;text-align:left}
+.cta h3{font-size:24px}
+.cta p{color:var(--ink-2);margin:0}
+
+.sources ol{padding-left:20px;color:var(--ink-3);font-size:12.5px;line-height:1.6}
+.sources a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line-2);word-break:break-word}
+.sources a:hover{color:var(--ink)}
+.sources h3{font-size:16px;font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin:22px 0 8px}
+footer{border-top:1px solid var(--line);padding:30px 0 60px;font-size:12.5px;color:var(--ink-3)}
+
+@media (max-width:760px){
+  .heronums,.grid4{grid-template-columns:1fr 1fr}
+  .grid2,.grid3,.g135{grid-template-columns:1fr}
+  .mw-ff{min-width:620px}
+  .mw-seg{min-width:460px}
+  .partnav{display:none}
+  .fun{grid-template-columns:120px 1fr}
+  .fun .lbl{font-size:12px}
+  .hide-sm{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <div class="brand"><b>Quality + Value</b> · S&amp;P MidCap 400 → Acuity</div>
+  <nav class="partnav"><a href="#screener">Screener</a><a href="#shortlist">Shortlist</a><a href="#acuity">Acuity</a><a href="#dcf">DCF</a></nav>
+</div></div>
+
+<main class="wrap">
+
+<header class="hero">
+  <div class="as-of"><span class="live">●</span> Screen run Oct 16, 2026 · DCF valued Oct 20, 2026 · AYI $303.25 (Oct 16 close)</div>
+  <h1>I screened 401 mid-caps for quality and value. <em>The filings picked the stock.</em></h1>
+  <p class="thesis">A quality-and-value screener built on my own SEC ingestion layer; the top-ranked names it surfaced that didn’t survive a read of their filings; and a three-scenario DCF on the one that did: Acuity (NYSE: AYI).</p>
+  <div class="heronums">
+    <div class="heronum"><div class="v">11<small>/ 401</small></div><div class="l">names strong on quality and value under every weighting</div></div>
+    <div class="heronum"><div class="v">5%→24%</div><div class="l">Intelligent Spaces’ share of Acuity sales, FY22 → FY26</div></div>
+    <div class="heronum"><div class="v">$323</div><div class="l">base-case value per share, +7% vs $303.25</div></div>
+    <div class="heronum"><div class="v">$313</div><div class="l">probability-weighted (25/50/25), +3%</div></div>
+  </div>
+</header>
+
+<!-- 01 -->
+<section class="section" id="screener">
+  <div class="eyebrow"><span class="num">01</span> The screener</div>
+  <h2>Find businesses that are <em>both</em> high quality and cheap, judged against their own sector</h2>
+  <p class="lede">The screen runs on <b>ARCUS</b>, the SEC ingestion layer I built earlier. It pulls XBRL financials straight from EDGAR, rebuilds point-in-time statements, and traces every number back to the filing it came from. The fundamentals come from the filings themselves, not a data vendor, so every input can be checked.</p>
+  <div class="grid4">
+    <div class="card pillar quality"><div class="kicker">Quality · pillar 1</div><div class="q">Is capital used with discipline?</div><div class="m">Management efficiency: asset growth, share issuance, leverage</div></div>
+    <div class="card pillar quality"><div class="kicker">Quality · pillar 2</div><div class="q">Are returns high and steady?</div><div class="m">Profitability: gross profitability, ROIC, stability of ROE</div></div>
+    <div class="card pillar quality"><div class="kicker">Quality · pillar 3</div><div class="q">Do earnings turn into cash?</div><div class="m">Cash flow: free cash flow, accruals</div></div>
+    <div class="card pillar value"><div class="kicker">Value</div><div class="q">What am I paying for it?</div><div class="m">Earnings, free-cash-flow and EBITDA yields; book to price</div></div>
+  </div>
+  <p class="note">Every metric is ranked <b>within its sector</b>, so a software company is never compared with a utility. A stock has to be strong on <b>both</b> quality and value, and stay near the top however the two are weighted. <b>Piotroski F, Beneish M and Altman Z</b> sit beside every name as red-flag checks, shown but never scored. The pillar structure follows Northern Trust’s published quality research; it is my approximation, not their model.</p>
+</section>
+
+<!-- 02 -->
+<section class="section">
+  <div class="eyebrow"><span class="num">02</span> The funnel</div>
+  <h2>From 401 holdings to one stock</h2>
+  <div class="card"><div class="fun" id="funnel"></div></div>
+  <p class="legend-row">Eligible = profitable in the latest quarter and trailing year, $4–25B market cap, ≥ $25M daily dollar volume, 16+ quarters of filings, no pending deal or recent spin-off. Financials and real estate excluded.</p>
+</section>
+
+<!-- 03 -->
+<section class="section" id="shortlist">
+  <div class="eyebrow"><span class="num">03</span> The shortlist</div>
+  <h2>Eleven names survived the screen. <em>Then I read the filings.</em></h2>
+  <p class="lede">A screen finds candidates; diligence picks the stock. Factor returns are portfolio averages, and one name carries risks the factor doesn’t pay you for. Most of these failed for reasons accounting data can’t see.</p>
+  <div class="card scroll-x">
+    <table class="tbl" style="min-width:720px">
+      <thead><tr><th>#</th><th>Company</th><th class="r">Quality</th><th class="r">Value</th><th class="r">F</th><th class="r">M</th><th class="r">Z</th><th>Verdict</th></tr></thead>
+      <tbody id="sl"></tbody>
+    </table>
+  </div>
+  <p class="legend-row">Quality and value are sector-relative percentiles (0–100). F = Piotroski (0–9). M = Beneish (below −1.78: unlikely manipulator). Z = Altman (above 2.99: safe zone). n/a = an input wasn’t tagged in the filings. Dropbox’s negative Z reflects negative book equity after buybacks, not operating distress.</p>
+</section>
+
+<!-- 04 -->
+<section class="section">
+  <div class="eyebrow"><span class="num">04</span> Ruling names out</div>
+  <h2>Four of the top five, and why the filings sent them home</h2>
+  <div class="grid2">
+    <div class="card ro">
+      <div class="rank">Ranked #1 · Dropbox (DBX)</div>
+      <div class="verdict">Great scores built on a balance sheet quirk</div>
+      <div class="stat"><div>−$2.2B<span>book equity</span></div><div>+0.9%<span>revenue growth</span></div></div>
+      <ul><li><b>Negative equity inflates ROIC.</b> Years of buybacks pushed book equity below zero, so return on capital reads far higher than the business earns.</li>
+      <li><b>Free cash flow is flattered</b> because equipment financed through leases never shows up as capex.</li></ul>
+    </div>
+    <div class="card ro">
+      <div class="rank">Ranked #2 · EnerSys (ENS)</div>
+      <div class="verdict">Quality built on a tax credit with an end date</div>
+      <div class="stat"><div>~39%<span>of FY26 adj. EPS from 45X</span></div><div>2033<span>credit ends</span></div></div>
+      <ul><li>The Section 45X manufacturing credit was <b>$158.6M in FY26</b>, booked as lower cost of goods: about $4.15 of $10.56 adjusted EPS.</li>
+      <li>It phases down to 75% in 2030, 50% in 2031, 25% in 2032, then zero. Without it, I estimate <b>~15x EV/EBITDA vs 11x screened</b>, and P/E ~34x vs ~18x.</li></ul>
+    </div>
+    <div class="card ro">
+      <div class="rank">Ranked #3 · Exelixis (EXEL)</div>
+      <div class="verdict">Top quality score, with an expiry date</div>
+      <div class="stat"><div>91%<span>Q2 revenue from cabozantinib</span></div><div>Jan 2030<span>earliest US generic</span></div></div>
+      <ul><li>Cabozantinib was <b>$573.0M of $628.7M</b> Q2 2026 revenue, and most license revenue is royalties on the same drug.</li>
+      <li>The Federal Circuit (Aug 31, 2026) set the earliest US generic entry at Jan 15, 2030. That makes it a pipeline bet, not a “quality lasts” pitch.</li></ul>
+    </div>
+    <div class="card ro fb">
+      <div class="rank">Ranked #4 · Cirrus Logic (CRUS) · fallback</div>
+      <div class="verdict">Cheap and cash-rich, but one customer is 91% of sales</div>
+      <div class="stat"><div>87→91%<span>Apple share, FY24→FY26</span></div><div>0.93¢→0.83¢<span>revenue per iPhone $</span></div></div>
+      <ul><li>Strong on paper: <b>~0.73x</b> its own-history EV/EBITDA, ~$1.17B cash and no debt, Piotroski 8.</li>
+      <li>But no long-term contracts, every product generation re-competed, falling content per iPhone, and September-quarter guidance down 4% year over year. Its main risk can be watched, not measured.</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="section" id="acuity">
+  <div class="eyebrow"><span class="num">05</span> Why Acuity</div>
+  <h2>Priced like a lighting company. <em>Becoming a building-technology company.</em></h2>
+  <p class="pull">Acuity’s quality depends least on any single customer, product, subsidy or date, and its mix is shifting toward a higher-margin segment the market <em>hasn’t re-priced</em>.</p>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="kicker" style="color:var(--s-abl)">■ Acuity Brands Lighting (ABL)</div>
+      <h3>~$3.6B sales · 18.1% adj. margin</h3>
+      <p class="body" style="font-size:14px;margin:0">Commercial lighting (Lithonia, Juno, Holophane, Gotham) sold through specifiers, agents and distributors. Mature and tied to construction.</p>
+    </div>
+    <div class="card">
+      <div class="kicker" style="color:var(--s-ais)">■ Acuity Intelligent Spaces (AIS)</div>
+      <h3>~$1.1B sales · 23.0% adj. margin</h3>
+      <p class="body" style="font-size:14px;margin:0">Distech building controls, Atrius cloud software and QSC’s Q-SYS audio, video and control platform. Sold through integrators; sticky once installed.</p>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="kicker">When lighting shrank, AIS kept growing</div>
+      <table class="tbl"><thead><tr><th>FY</th><th class="r">Lighting sales</th><th class="r">AIS sales</th><th class="r">AIS margin</th></tr></thead><tbody>
+        <tr><td>FY22</td><td class="r">$3,810M</td><td class="r">$216M</td><td class="r">18.5%</td></tr>
+        <tr><td>FY23</td><td class="r">−2.3%</td><td class="r">+16.9%</td><td class="r">19.8%</td></tr>
+        <tr><td>FY24</td><td class="r">−4.0%</td><td class="r">+15.5%</td><td class="r">21.7%</td></tr>
+        <tr><td>FY25</td><td class="r">+1.1%</td><td class="r">QSC from Jan</td><td class="r">21.5%</td></tr>
+        <tr><td>FY26</td><td class="r">−1.0%</td><td class="r">+44.8%</td><td class="r">23.0%</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <div class="kicker">What the screen and the filings say</div>
+      <div class="kv">
+        <div>Quality / value percentile among industrials</div><div>100 / 82</div>
+        <div>EV/EBITDA vs 10-yr median (5-yr)</div><div>11.2x vs 11.0x (12.7x)</div>
+        <div>FY26 free cash flow</div><div>$748M</div>
+        <div>Net debt, Aug 31, 2026</div><div>~$64M</div>
+        <div>Customers above 10% of sales</div><div>none</div>
+        <div>Piotroski · Beneish · Altman</div><div>5 · −2.57 · 5.4</div>
+      </div>
+    </div>
+  </div>
+  <p class="note">The multiple sits on a 10-year median set when Acuity was <b>~95% lighting</b>. QSC (closed Jan 1, 2025, ~$1.2B) made AIS mostly pro audio-video; the $600M term loan that funded it is fully repaid. AIS is <b>less</b> cyclical, not non-cyclical: the 10-K says construction affects demand for all of its products.</p>
+</section>
+
+<!-- 06 -->
+<section class="section" id="dcf">
+  <div class="eyebrow"><span class="num">06</span> The DCF</div>
+  <h2>Three scenarios, built segment by segment</h2>
+  <p class="lede">Lighting and AIS are forecast separately for FY27–31, faded to FY34, then valued with a value-driver terminal value. FY27 is anchored on management’s guidance: Lighting <b>flat to low-single-digit</b> growth, AIS <b>low-to-mid-teens</b>, net sales <b>$4.7–4.9B</b>.</p>
+
+  <div class="switch" role="group" aria-label="Scenario">
+    <button type="button" data-sc="bear" aria-pressed="false">Bear · 25%</button>
+    <button type="button" data-sc="base" aria-pressed="true">Base · 50%</button>
+    <button type="button" data-sc="bull" aria-pressed="false">Bull · 25%</button>
+  </div>
+
+  <div class="grid4" id="vtiles" style="margin-bottom:14px"></div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="kicker">Value per share across scenarios vs today’s price</div>
+    <div class="scroll-x"><div class="chart ff mw-ff"><svg id="ff" viewBox="0 0 860 92"></svg></div></div>
+  </div>
+
+  <div class="grid2 g135" style="margin-bottom:14px">
+    <div class="card">
+      <div class="kicker">Segment sales, $M · <span id="segsc">base</span> case from FY27</div>
+      <div class="lg"><span><i style="background:var(--s-abl)"></i>Lighting (ABL)</span><span><i style="background:var(--s-ais)"></i>Intelligent Spaces (AIS)</span><span class="muted">label = AIS share of sales</span></div>
+      <div class="scroll-x"><div class="chart mw-seg" id="segwrap"><svg id="seg" viewBox="0 0 520 280"></svg><div class="tip" id="segtip"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="kicker">AIS adjusted operating margin</div>
+      <div class="chart" id="mgwrap"><svg id="mg" viewBox="0 0 380 230"></svg><div class="tip" id="mgtip"></div></div>
+      <div class="kv" style="margin-top:10px">
+        <div>AIS share of segment profit, FY26</div><div>28%</div>
+        <div>AIS share of segment profit, FY31E</div><div id="ps31">41%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2" style="grid-template-columns:1fr;margin-bottom:14px">
+    <div class="card">
+      <div class="kicker">Scenario drivers</div>
+      <table class="tbl"><thead><tr><th></th><th class="r">Bear</th><th class="r">Base</th><th class="r">Bull</th></tr></thead><tbody>
+        <tr><td>FY27 Lighting growth</td><td class="r">−3.5%</td><td class="r">+1.0%</td><td class="r">+4.0%</td></tr>
+        <tr><td>FY27 AIS growth</td><td class="r">10%</td><td class="r">13%</td><td class="r">17%</td></tr>
+        <tr><td>AIS growth, FY28–31</td><td class="r">4–8%</td><td class="r">10–13%</td><td class="r">12–15%</td></tr>
+        <tr><td>Lighting growth, FY28–31</td><td class="r">−7% to +3%</td><td class="r">2–2.5%</td><td class="r">3–3.5%</td></tr>
+        <tr><td>AIS margin, FY27 → FY31</td><td class="r">22.0 → 23.5%</td><td class="r">23.0 → 26.0%</td><td class="r">23.5 → 27.5%</td></tr>
+        <tr><td>FY27 / FY31 net sales, $B</td><td class="r">4.62 / 4.94</td><td class="r">4.82 / 5.83</td><td class="r">4.97 / 6.32</td></tr>
+        <tr><td>Terminal g / RONIC</td><td class="r">2.5% / 9.7%</td><td class="r">3% / 20%</td><td class="r">3% / 30%</td></tr>
+      </tbody></table>
+      <p class="legend-row" style="margin-bottom:0">Bear: a two-year non-residential downturn like FY20, with new investment earning only its cost of capital. Bull: share gains plus a construction recovery and capital-light AIS growth.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Discount rate and sanity checks</div>
+      <div class="kv kv2">
+        <div>Risk-free (10-yr Treasury, Oct 16)</div><div>5.09%</div>
+        <div>Beta (5-yr monthly 1.29, Blume-adjusted)</div><div>1.19</div>
+        <div>Equity risk premium (Damodaran implied)</div><div>4.2%</div>
+        <div>Cost of equity · after-tax cost of debt</div><div>10.1% · 4.2%</div>
+        <div><b style="color:var(--ink);font-weight:500">WACC</b> (6.7% debt weight)</div><div>9.7%</div>
+        <div>Terminal value share of EV (base)</div><div>60%</div>
+        <div>Implied exit EV/EBITDA (base)</div><div>9.2x</div>
+        <div>Base FY27 sales vs guide $4.70–4.90B</div><div>$4.82B ✓</div>
+        <div>Base FY27 adj. EPS vs guide $20.50–22.00</div><div>$21.46 ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="kicker">Base-case value per share · sensitivity</div>
+    <div class="minisw" role="group" aria-label="Sensitivity axis">
+      <button type="button" data-ax="g" aria-pressed="true">WACC × terminal growth</button>
+      <button type="button" data-ax="ronic" aria-pressed="false">WACC × RONIC</button>
+    </div>
+    <div class="scroll-x"><table class="sens" id="sens" style="min-width:520px"></table></div>
+    <p class="legend-row" style="margin-bottom:0">Teal = above the $303.25 price, coral = below; deeper = further away. Outlined = base case (WACC 9.7%, g 3%, RONIC 20%).</p>
+  </div>
+</section>
+
+<!-- 07 -->
+<section class="section">
+  <div class="eyebrow"><span class="num">07</span> The honest read</div>
+  <h2>The market already prices most of the base case. <em>The upside is the mix shift.</em></h2>
+  <p class="lede">At $303 the stock sits just under my base case and the probability-weighted value is only ~3% higher. The return comes from Intelligent Spaces compounding toward the bull case, which is worth ~$392, not from the base case being mispriced.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="kicker" style="color:var(--coral)">What would prove me wrong</div>
+      <ul class="kill" style="margin:0">
+        <li><b>AIS organic growth below lighting</b> for two straight quarters</li>
+        <li><b>AIS adjusted margin below 21%</b></li>
+        <li><b>An acquisition</b> that takes net leverage above ~2x</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="kicker">Risks I’m carrying</div>
+      <ul class="kill" style="margin:0">
+        <li><b>The construction cycle:</b> beta above 1 and lighting flat to down</li>
+        <li><b>Memory costs:</b> a ~200 bp hit to AIS gross margin in FY27</li>
+        <li><b>Mexico</b> makes 57% of finished goods: tariffs and labor</li>
+        <li><b>Capital deployment:</b> management says it will deploy capital “aggressively”</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="cta">
+    <h3>Want the build details?</h3>
+    <p>How the screener ingests and audits SEC filings, how the scores are built and weighted, and how the DCF is put together: DM me on LinkedIn and I’m happy to walk through it.</p>
+  </div>
+</section>
+
+<!-- Sources -->
+<section class="section sources">
+  <div class="eyebrow"><span class="num">§</span> Sources</div>
+  <h3>Acuity</h3>
+  <ol>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421526000047/ayi-20261001x8xk_ex991.htm">FY26 results, 8-K Ex. 99.1 (Oct 1, 2026)</a></li>
+    <li><a href="https://www.tradingkey.com/news/transcripts/262196843-tradingkey">Q4 FY26 earnings call transcript: FY27 outlook by segment</a></li>
+    <li><a href="https://investors.acuityinc.com/news-releases/news-release-details/acuity-reports-fiscal-2026-fourth-quarter-and-full-year-results">FY26 fourth-quarter and full-year results release</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421526000036/ayi-20260531.htm">10-Q, Q3 FY26</a> · <a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421525000082/ayi-20250831.htm">10-K FY25</a> · <a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421524000085/ayi-20240831.htm">10-K FY24</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421525000059/ayi-20250531.htm">10-Q Q3 FY25 (QSC purchase price allocation)</a> · <a href="https://www.sec.gov/Archives/edgar/data/1144215/000119312525002182/d908962d8k.htm">QSC closing and term loan (8-K)</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/1144215/000119312526221945/d63196dex101.htm">Credit agreement, May 8, 2026</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421523000082/ayi-20231004x8xk_ex991.htm">FY23 results (8-K)</a> · <a href="https://www.sec.gov/Archives/edgar/data/1144215/000114421525000076/ayi-20251001x8xk_ex991.htm">FY25 results (8-K)</a></li>
+  </ol>
+  <h3>Ruled-out names</h3>
+  <ol>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/0001467623/000146762326000045/q22026er-exhibit991q2xq4.htm">Dropbox Q2 2026 release (8-K)</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/0001289308/000162828026036903/ex991_earningsx4qfy26.htm">EnerSys Q4 FY26 release (8-K)</a> · <a href="https://www.sec.gov/Archives/edgar/data/0001289308/000162828026036900/ens-20260331.htm">EnerSys FY26 10-K</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/0000939767/000093976726000098/exel-20260703.htm">Exelixis Q2 2026 10-Q</a> · <a href="https://ir.exelixis.com/node/27706">Exelixis appeal update (Aug 31, 2026)</a></li>
+    <li><a href="https://www.sec.gov/Archives/edgar/data/0000772406/000077240626000018/crus-20260328.htm">Cirrus Logic FY26 10-K</a> · <a href="https://www.sec.gov/Archives/edgar/data/0000772406/000077240626000036/pressrelease.htm">Cirrus Logic Q1 FY27 release (8-K)</a></li>
+  </ol>
+  <h3>Method and market data</h3>
+  <ol>
+    <li><a href="https://www.northerntrust.com/content/dam/northerntrust/pws/nt/documents/investment-management/foundations-in-factors.pdf">Hunstad, Lehnherr, Prakash, “Foundations in Factors” (Northern Trust)</a></li>
+    <li><a href="https://ntam.northerntrust.com/content/dam/northerntrust/investment-management/global/en/documents/research/quantitative/factor-momentum-within-factors.pdf">Lehnherr et al., “Factor Momentum within Factors” (Northern Trust)</a></li>
+    <li><a href="https://data.sec.gov/api/xbrl/companyfacts/CIK0001144215.json">SEC XBRL company facts (Acuity history)</a></li>
+    <li><a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve&amp;field_tdr_date_value=2026">U.S. Treasury daily par yield curve, 2026</a></li>
+    <li><a href="https://pages.stern.nyu.edu/~adamodar/pc/implprem/ERPbymonth.xlsx">Damodaran, implied equity risk premium by month</a></li>
+  </ol>
+</section>
+
+<footer>
+  Screen run as of Oct 16, 2026; DCF valued Oct 20, 2026 at the Oct 16 close of $303.25. FY26 figures are from Acuity’s Oct 1, 2026 release, preliminary pending audit. Personal analysis for learning purposes; not investment advice.
+</footer>
+</main>
+
+<script>
+const D={"years":["FY22","FY23","FY24","FY25","FY26","FY27E","FY28E","FY29E","FY30E","FY31E"],"hist":{"abl":[3810,3722.8,3573.4,3612.2,3576.4],"ais":[216.1,252.7,291.9,764.3,1106.6],"share":[5.4,6.4,7.6,17.6,23.8],"aism":[18.5,19.8,21.7,21.5,23.0]},"sc":{"bear":{"abl":[3451.2,3209.6,3241.7,3339.0,3422.5],"ais":[1217.3,1266.0,1367.2,1476.6,1580.0],"share":[26.3,28.6,30.0,31.0,32.0],"aism":[22.0,21.5,22.5,23.0,23.5],"ps31":38.5,"ps26":28.3,"ablg27":-3.5,"aisg27":10.0,"aisg":[10.0,4.0,8.0,8.0,7.0],"ablg":[-3.5,-7.0,1.0,3.0,2.5],"adjm31":17.8,"vps":214.76,"tv":53.2,"exit":7.4,"g":null,"ronic":null,"ev":6.65,"sales27":4623,"sales31":4944,"p":0.25},"base":{"abl":[3612.2,3684.4,3776.5,3870.9,3967.7],"ais":[1250.5,1413.0,1582.6,1756.7,1932.3],"share":[26.0,28.0,29.9,31.6,33.2],"aism":[23.0,24.0,24.75,25.5,26.0],"ps31":40.9,"ps26":28.3,"ablg27":1.0,"aisg27":13.0,"aisg":[13.0,13.0,12.0,11.0,10.0],"ablg":[1.0,2.0,2.5,2.5,2.5],"adjm31":19.6,"vps":323.03,"tv":60.1,"exit":9.2,"g":null,"ronic":null,"ev":9.96,"sales27":4816,"sales31":5829,"p":0.5},"bull":{"abl":[3719.5,3849.6,3984.4,4123.8,4247.5],"ais":[1294.7,1488.9,1697.4,1918.0,2148.2],"share":[26.1,28.2,30.2,32.1,34.0],"aism":[23.5,25.0,26.0,27.0,27.5],"ps31":42.3,"ps26":28.3,"ablg27":4.0,"aisg27":17.0,"aisg":[17.0,15.0,14.0,13.0,12.0],"ablg":[4.0,3.5,3.5,3.5,3.0],"adjm31":20.8,"vps":392.4,"tv":62.7,"exit":9.8,"g":null,"ronic":null,"ev":12.08,"sales27":4966,"sales31":6316,"p":0.25}},"weighted":313.31,"sens":{"wacc":[8.71,9.21,9.71,10.21,10.71,11.21],"g":[[2.0,351.5,327.1,305.9,287.3,270.8,256.1],[2.5,363.7,337.0,313.9,293.8,276.2,260.6],[3.0,378.0,348.3,323.0,301.2,282.2,265.5],[3.5000000000000004,395.0,361.6,333.6,309.7,289.1,271.1],[4.0,415.5,377.4,345.9,319.4,296.9,277.4]],"ronic":[[10.0,334.6,309.7,288.5,270.1,254.1,240.0],[15.0,363.5,335.4,311.5,290.9,272.9,257.0],[20.0,378.0,348.3,323.0,301.2,282.2,265.5],[30.0,392.5,361.2,334.6,311.6,291.6,274.1],[50.0,404.1,371.5,343.8,319.9,299.1,280.9]]}};
+const NS="http://www.w3.org/2000/svg";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={abl:css("--s-abl"),ais:css("--s-ais"),ink:css("--ink"),ink2:css("--ink-2"),ink3:css("--ink-3"),line:"rgba(231,237,245,.09)",gold:css("--gold"),teal:css("--teal"),coral:css("--coral"),bg2:css("--bg-2")};
+function el(p,t,a,txt){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e}
+const fmt=v=>"$"+Math.round(v).toLocaleString("en-US");
+const PRICE=303.25;
+
+/* funnel */
+(()=>{const rows=[["S&amp;P 400 holdings",401],["Ex-financials &amp; real estate",306],["<b>Eligible</b> (profitable, sized, liquid)",227],["Enough data to score",215],["<b>Strong on quality and value</b>",35],["<b>Top 15 at every weighting</b>",11],["<b>Picked after the filings</b>",1]];
+ const f=document.getElementById("funnel");
+ f.innerHTML=rows.map(([l,n],i)=>`<div class="lbl">${l}</div><div class="track"><div class="bar${i==6?" pick":""}" data-w="${n/401*82}" style="width:0"></div><span class="n" style="left:calc(${Math.max(n/401*82,0.6)}% + 8px)">${n}${i==6?" · Acuity":""}</span></div>`).join("");
+ const go=()=>f.querySelectorAll(".bar").forEach(b=>b.style.width=`max(4px,${b.dataset.w}%)`);
+ if("IntersectionObserver" in window){const io=new IntersectionObserver(e=>{if(e[0].isIntersecting){go();io.disconnect()}},{threshold:.3});io.observe(f)}else go();
+})();
+
+/* shortlist */
+(()=>{const r=[
+ [1,"DBX","Dropbox","Info Tech",97.4,92.1,6,"−3.08","−1.5","out","Negative equity inflates ROIC; lease-funded FCF overstated"],
+ [2,"ENS","EnerSys","Industrials",97.1,91.2,5,"n/a","4.4","out","~39% of adj. EPS from a tax credit that ends in 2033"],
+ [3,"EXEL","Exelixis","Health Care",100,85.0,6,"−2.60","15.9","out","One drug; generics possible from Jan 2030"],
+ [4,"CRUS","Cirrus Logic","Info Tech",84.2,100,8,"−2.93","11.1","fb","91% of sales to Apple"],
+ [5,"AYI","Acuity","Industrials",100,82.4,5,"−2.57","5.4","pick","Many customers; mix shifting to building tech"],
+ [6,"MUR","Murphy Oil","Energy",90.9,90.9,5,"−2.81","6.7","out","Cyclical: a low multiple can mean peak earnings"],
+ [7,"OVV","Ovintiv","Energy",100,81.8,8,"n/a","4.9","out","Cyclical, and above its own-history multiple"],
+ [8,"GNTX","Gentex","Cons. Disc.",83.7,93.9,6,"−2.83","8.5","out","Cheap vs history, but ROIC fell ~22% → 16%"],
+ [9,"OSK","Oshkosh","Industrials",76.5,100,5,"−2.40","3.2","out","Profitability pillar at the 28th percentile"],
+ [10,"PEGA","Pegasystems","Info Tech",86.8,86.8,6,"−2.52","7.2","out","Tax benefit inflates earnings; fails the lease test"],
+ [11,"FCN","FTI Consulting","Industrials",85.3,88.2,4,"−2.39","7.8","out","Margins falling; net debt ~2.7x in a year for buybacks"]];
+ const b={pick:'<span class="badge b-pick">Pick</span>',fb:'<span class="badge b-fb">Fallback</span>',out:'<span class="badge b-out">Out</span>'};
+ const bar=v=>`<span class="sbar">${Math.round(v)}<u><i style="width:${v*.46}px"></i></u></span>`;
+ document.getElementById("sl").innerHTML=r.map(x=>`<tr class="${x[9]=="pick"?"pick":""}"><td class="mono">${x[0]}</td><td><span class="tk">${x[1]}</span> <span class="hide-sm">${x[2]}</span></td><td class="r">${bar(x[4])}</td><td class="r">${bar(x[5])}</td><td class="r mono">${x[6]}</td><td class="r mono">${x[7]}</td><td class="r mono">${x[8]}</td><td>${b[x[9]]} <span class="why">${x[10]}</span></td></tr>`).join("");
+})();
+
+/* scenario state */
+let SC="base";
+const NAMES={bear:"Bear",base:"Base",bull:"Bull"};
+function tiles(){
+  const t=document.getElementById("vtiles"),s=D.sc;
+  const item=(k,lab,v,p,desc)=>{const d=v/PRICE-1;return `<div class="card vtile${k==SC?" active":""}"><div class="kicker">${lab}</div><div><span class="v">${fmt(v)}</span><span class="d ${d>=0?"up":"dn"}">${d>=0?"+":"−"}${Math.abs(d*100).toFixed(0)}%</span></div><div class="l">${desc}</div></div>`};
+  t.innerHTML=item("bear","Bear · 25%",s.bear.vps,.25,"Lighting −3.5% then −7%; AIS 4–10%")+item("base","Base · 50%",s.base.vps,.5,"AIS 10–13% a year, margin to 26%")+item("bull","Bull · 25%",s.bull.vps,.25,"AIS 12–17% a year, margin to 27.5%")+item("w","Probability-weighted",D.weighted,1,"vs $303.25 price (Oct 16)");
+}
+
+/* football field */
+function ff(){
+  const s=document.getElementById("ff");s.innerHTML="";
+  const L=24,R=836,lo=180,hi=420,x=v=>L+(v-lo)/(hi-lo)*(R-L),y=44;
+  for(let v=200;v<=420;v+=20){el(s,"line",{x1:x(v),x2:x(v),y1:24,y2:62,stroke:C.line});el(s,"text",{x:x(v),y:84,"text-anchor":"middle"},"$"+v)}
+  el(s,"rect",{x:x(D.sc.bear.vps),y:y-7,width:x(D.sc.bull.vps)-x(D.sc.bear.vps),height:14,rx:3,fill:"rgba(70,194,196,.18)"});
+  el(s,"line",{x1:x(PRICE),x2:x(PRICE),y1:16,y2:68,stroke:C.ink,"stroke-width":1.5,"stroke-dasharray":"4 3"});
+  el(s,"text",{x:x(PRICE)-6,y:14,"text-anchor":"end",fill:C.ink,"font-weight":600},"Price $303");
+  el(s,"text",{x:x(D.weighted)+6,y:14,fill:C.gold,"font-weight":600},"Weighted "+fmt(D.weighted));
+  el(s,"circle",{cx:x(D.weighted),cy:y,r:6,fill:C.gold,stroke:C.bg2,"stroke-width":2});
+  ["bear","base","bull"].forEach(k=>{const v=D.sc[k].vps,on=k==SC;
+    el(s,"circle",{cx:x(v),cy:y,r:on?8:6,fill:on?C.ink:C.teal,stroke:C.bg2,"stroke-width":2});
+    el(s,"text",{x:x(v)+(k=="bear"?-12:12),y:y+4,"text-anchor":k=="bear"?"end":"start",fill:on?C.ink:C.ink2,"font-weight":on?600:400},NAMES[k]+" "+fmt(v));});
+}
+
+/* tooltip helper */
+function tip(wrapId,tipId){const w=document.getElementById(wrapId),t=document.getElementById(tipId);
+  return {show(html,px,py){t.innerHTML=html;const r=w.getBoundingClientRect();t.style.left=Math.min(Math.max(px,70),r.width-70)+"px";t.style.top=py+"px";t.style.opacity=1},hide(){t.style.opacity=0},w};}
+
+/* segment stacked bars */
+function seg(){
+  const s=document.getElementById("seg");s.innerHTML="";document.getElementById("segsc").textContent=NAMES[SC].toLowerCase();
+  const sc=D.sc[SC],abl=[...D.hist.abl,...sc.abl],ais=[...D.hist.ais,...sc.ais],sh=[...D.hist.share,...sc.share];
+  const L=38,R=516,T=26,B=244,max=7000,y=v=>B-v/max*(B-T),n=10,step=(R-L)/n,bw=step*.62;
+  for(let v=0;v<=max;v+=1000){if(v%2000&&v)continue;el(s,"line",{x1:L,x2:R,y1:y(v),y2:y(v),stroke:C.line});el(s,"text",{x:L-8,y:y(v)+4,"text-anchor":"end","font-size":10.5},v?v/1000+"k":"0")}
+  const xs=i=>L+i*step+(step-bw)/2;
+  el(s,"line",{x1:xs(5)-(step-bw)/2,x2:xs(5)-(step-bw)/2,y1:T-14,y2:B,stroke:C.ink3,"stroke-dasharray":"3 3"});
+  el(s,"text",{x:xs(5)-(step-bw)/2+5,y:T-6,"font-size":10.5},"Forecast →");
+  const tp=tip("segwrap","segtip");
+  abl.forEach((a,i)=>{const b=ais[i],x=xs(i),est=i>=5,op=est?.62:1;
+    el(s,"rect",{x,y:y(a),width:bw,height:Math.max(0,B-y(a)),fill:C.abl,opacity:op});
+    el(s,"rect",{x,y:y(a+b),width:bw,height:Math.max(0,y(a)-y(a+b)-2),rx:3,fill:C.ais,opacity:op});
+    el(s,"text",{x:x+bw/2,y:y(a+b)-6,"text-anchor":"middle","font-size":11,fill:C.ink,"font-weight":600},Math.round(sh[i])+"%");
+    el(s,"text",{x:x+bw/2,y:B+16,"text-anchor":"middle","font-size":10},D.years[i].replace("FY",""));
+    const hit=el(s,"rect",{x:x-(step-bw)/2,y:T-10,width:step,height:B-T+10,fill:"transparent"});
+    hit.addEventListener("mousemove",ev=>{const r=tp.w.getBoundingClientRect();tp.show(`<div class="t">${D.years[i]}${est?" · "+NAMES[SC].toLowerCase():""}</div><span class="sw" style="background:${C.ais}"></span>AIS ${fmt(b)}M<br><span class="sw" style="background:${C.abl}"></span>Lighting ${fmt(a)}M<br>AIS share ${sh[i].toFixed(1)}%`,ev.clientX-r.left,(y(a+b)/280)*r.height-10)});
+    hit.addEventListener("mouseleave",tp.hide);
+  });
+  el(s,"text",{x:xs(3)+bw/2,y:B+32,"text-anchor":"middle","font-size":10},"QSC acquired Jan 2025");
+  el(s,"text",{x:R,y:B+32,"text-anchor":"end","font-size":10},"fiscal years end Aug 31");
+}
+
+/* AIS margin line */
+function mg(){
+  const s=document.getElementById("mg");s.innerHTML="";
+  const act=D.hist.aism,est=[act[4],...D.sc[SC].aism],L=36,R=368,T=18,B=196,lo=16,hi=28;
+  const y=v=>B-(v-lo)/(hi-lo)*(B-T),x=i=>L+8+i*((R-L-16)/9);
+  for(let v=lo;v<=hi;v+=4){el(s,"line",{x1:L,x2:R,y1:y(v),y2:y(v),stroke:C.line});el(s,"text",{x:L-6,y:y(v)+4,"text-anchor":"end","font-size":10.5},v+"%")}
+  el(s,"polyline",{points:act.map((v,i)=>x(i)+","+y(v)).join(" "),fill:"none",stroke:C.ais,"stroke-width":2});
+  el(s,"polyline",{points:est.map((v,i)=>x(i+4)+","+y(v)).join(" "),fill:"none",stroke:C.ais,"stroke-width":2,"stroke-dasharray":"5 4"});
+  const tp=tip("mgwrap","mgtip"),all=[...act,...D.sc[SC].aism];
+  all.forEach((v,i)=>{el(s,"circle",{cx:x(i),cy:y(v),r:i<5?4:3.5,fill:i<5?C.ais:C.bg2,stroke:C.ais,"stroke-width":2});
+    const hit=el(s,"circle",{cx:x(i),cy:y(v),r:12,fill:"transparent"});
+    hit.addEventListener("mouseenter",()=>{const r=tp.w.getBoundingClientRect();tp.show(`<div class="t">${D.years[i]}</div>AIS margin ${v.toFixed(1)}%`,x(i)/380*r.width,y(v)/230*r.height-12)});
+    hit.addEventListener("mouseleave",tp.hide);});
+  el(s,"text",{x:x(0),y:y(act[0])+18,"text-anchor":"middle",fill:C.ink,"font-size":11,"font-weight":600},"18.5%");
+  el(s,"text",{x:x(4),y:y(act[4])-10,"text-anchor":"middle",fill:C.ink,"font-size":11,"font-weight":600},"23.0%");
+  const e=all[9];el(s,"text",{x:x(9)-8,y:y(e)-10,"text-anchor":"end",fill:C.ink,"font-size":11,"font-weight":600},e.toFixed(1)+"%");
+  [0,2,4,6,9].forEach(i=>el(s,"text",{x:x(i),y:B+18,"text-anchor":"middle","font-size":10},D.years[i]));
+  document.getElementById("ps31").textContent=Math.round(D.sc[SC].ps31)+"%";
+}
+
+/* sensitivity */
+let AX="g";
+function sens(){
+  const t=document.getElementById("sens"),w=D.sens.wacc,rows=D.sens[AX];
+  const col=v=>{const d=(v-PRICE)/110,a=Math.min(Math.abs(d),1)*.5+.07;return d>=0?`rgba(70,194,196,${a})`:`rgba(227,96,74,${a})`};
+  const baseRow=AX=="g"?2:2;
+  let h=`<tr><th>${AX=="g"?"g ↓ · WACC →":"RONIC ↓ · WACC →"}</th>`+w.map(v=>`<th>${v.toFixed(1)}%</th>`).join("")+"</tr>";
+  rows.forEach((r,i)=>{h+=`<tr><td class="rh">${AX=="g"?r[0].toFixed(1)+"%":Math.round(r[0])+"%"}</td>`+r.slice(1).map((v,j)=>`<td class="${i==baseRow&&j==2?"base":""}" style="background:${col(v)}" title="WACC ${w[j].toFixed(2)}%, ${AX=="g"?"g "+r[0].toFixed(1)+"%":"RONIC "+Math.round(r[0])+"%"}: ${fmt(v)} (${v>=PRICE?"+":"−"}${Math.abs((v/PRICE-1)*100).toFixed(0)}%)">${fmt(v)}</td>`).join("")+"</tr>"});
+  t.innerHTML=h;
+}
+
+function render(){tiles();ff();seg();mg();}
+document.querySelectorAll(".switch button").forEach(b=>b.addEventListener("click",()=>{SC=b.dataset.sc;document.querySelectorAll(".switch button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();}));
+document.querySelectorAll(".minisw button").forEach(b=>b.addEventListener("click",()=>{AX=b.dataset.ax;document.querySelectorAll(".minisw button").forEach(x=>x.setAttribute("aria-pressed",x===b));sens();}));
+render();sens();
+</script>
+</body>
+</html>
