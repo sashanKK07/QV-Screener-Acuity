@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quality + Value: From 401 Mid-Caps to Acuity · A Screener and a DCF</title>
+<title>Quality + Value: From 400 Mid-Caps to Acuity · A Screener and a DCF</title>
 <meta name="description" content="A quality-and-value screen of the S&P MidCap 400 built on an SEC ingestion layer, the top-ranked names the filings ruled out, and a three-scenario DCF on Acuity (NYSE: AYI).">
-<meta property="og:title" content="Quality + Value: From 401 Mid-Caps to Acuity">
+<meta property="og:title" content="Quality + Value: From 400 Mid-Caps to Acuity">
 <meta property="og:description" content="A screener built on SEC filings, four names the filings ruled out, and a three-scenario DCF on Acuity (NYSE: AYI).">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230a0d13%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-family=%22Georgia%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22%23e3b24c%22%3EQV%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -261,7 +261,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 60px;font-size:12.5px;col
   <div class="hx-inner">
     <div class="hx-left">
       <div class="pills"><span class="pill">Quality + Value screen · S&amp;P MidCap 400</span><span class="pill pill-g">Screener → DCF</span></div>
-      <h1><span class="nw">401 mid-caps in.</span><br><em>One stock out.</em></h1>
+      <h1><span class="nw">400 mid-caps in.</span><br><em>One stock out.</em></h1>
       <p class="hx-lede">A quality-and-value screener built on my own SEC data pipeline, the top-ranked names the filings ruled out, and a three-scenario DCF on the one that survived: <b>Acuity (NYSE: AYI)</b>.</p>
       <div class="byline">Researched &amp; built by <b>Sashank Kocherlakota</b> · October 2026</div>
     </div>
@@ -275,8 +275,8 @@ footer{border-top:1px solid var(--line);padding:30px 0 60px;font-size:12.5px;col
   </div>
   <div class="hx-inner hx-pipe-wrap">
     <ol class="pipe" aria-label="Screening funnel">
-      <li><b>401</b><span>S&amp;P 400 holdings</span><i style="width:100%"></i></li>
-      <li><b>306</b><span>ex-financials &amp; REITs</span><i style="width:76%"></i></li>
+      <li><b>400</b><span>S&amp;P MidCap 400 stocks</span><i style="width:100%"></i></li>
+      <li><b>306</b><span>ex-financials &amp; REITs</span><i style="width:77%"></i></li>
       <li><b>227</b><span>eligible</span><i style="width:57%"></i></li>
       <li><b>35</b><span>strong on both</span><i style="width:9%"></i></li>
       <li><b>11</b><span>robust to weighting</span><i style="width:3%"></i></li>
@@ -303,7 +303,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 60px;font-size:12.5px;col
 <!-- 02 -->
 <section class="section">
   <div class="eyebrow"><span class="num">02</span> The funnel</div>
-  <h2>From 401 holdings to one stock</h2>
+  <h2>From 400 stocks to one</h2>
   <div class="card"><div class="fun" id="funnel"></div></div>
   <p class="legend-row">Eligible = profitable in the latest quarter and trailing year, $4–25B market cap, ≥ $25M daily dollar volume, 16+ quarters of filings, no pending deal or recent spin-off. Financials and real estate excluded.</p>
 </section>
@@ -556,9 +556,9 @@ const fmt=v=>"$"+Math.round(v).toLocaleString("en-US");
 const PRICE=303.25;
 
 /* funnel */
-(()=>{const rows=[["S&amp;P 400 holdings",401],["Ex-financials &amp; real estate",306],["<b>Eligible</b> (profitable, sized, liquid)",227],["Enough data to score",215],["<b>Strong on quality and value</b>",35],["<b>Top 15 at every weighting</b>",11],["<b>Picked after the filings</b>",1]];
+(()=>{const rows=[["S&amp;P MidCap 400 stocks",400],["Ex-financials &amp; real estate",306],["<b>Eligible</b> (profitable, sized, liquid)",227],["Enough data to score",215],["<b>Strong on quality and value</b>",35],["<b>Top 15 at every weighting</b>",11],["<b>Picked after the filings</b>",1]];
  const f=document.getElementById("funnel");
- f.innerHTML=rows.map(([l,n],i)=>`<div class="lbl">${l}</div><div class="track"><div class="bar${i==6?" pick":""}" data-w="${n/401*82}" style="width:0"></div><span class="n" style="left:calc(${Math.max(n/401*82,0.6)}% + 8px)">${n}${i==6?" · Acuity":""}</span></div>`).join("");
+ f.innerHTML=rows.map(([l,n],i)=>`<div class="lbl">${l}</div><div class="track"><div class="bar${i==6?" pick":""}" data-w="${n/400*82}" style="width:0"></div><span class="n" style="left:calc(${Math.max(n/400*82,0.6)}% + 8px)">${n}${i==6?" · Acuity":""}</span></div>`).join("");
  const go=()=>f.querySelectorAll(".bar").forEach(b=>b.style.width=`max(4px,${b.dataset.w}%)`);
  if("IntersectionObserver" in window){const io=new IntersectionObserver(e=>{if(e[0].isIntersecting){go();io.disconnect()}},{threshold:.3});io.observe(f)}else go();
 })();
